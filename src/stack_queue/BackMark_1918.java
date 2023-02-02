@@ -1,47 +1,77 @@
 package stack_queue;
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Stack;
 
 public class BackMark_1918 {
-	
-	 public static int precedence(char op) {
-	        if(op == '*' || op == '/') return 2;
-	        else if(op == '+' || op == '-') return 1;
-	        else return 0; //스택 안에는 '('도 들어올 수 있다. 하지만 '('는 꺼내져서는 안되기 때문에 제일 낮은 값을 반환하도록 한다.
-	    }
-	public static void main(String[] args){
-		Scanner scan = new Scanner(System.in);
-		 
-        char[] calculation = scan.nextLine().toCharArray();
-        
-        Stack<Character> op = new Stack<>(); // 연산자를 담을 스택
-        StringBuilder sb = new StringBuilder();//정답을 담을 문자열
-        for(int i = 0; i < calculation.length; i++) {
-            // 연산식이 숫자라면 그대로 문자열에 담아준다.
-            if(calculation[i] >= 'A' && calculation[i] <= 'Z') sb.append(calculation[i] + "");
-            else { //연산식이 숫자가 아니라면
-                if(calculation[i] == '(') op.push(calculation[i]);
-                else if(calculation[i] == ')') { //'('이 나올때까지 문자열에 담아준다.
-                    while(!op.isEmpty() && op.peek() != '(') {
-                        sb.append(op.pop()); //괄호가 아니면 연산자를 꺼내어 문자열에 담는다.
-                    }
-                    if(!op.isEmpty()) op.pop(); //'('연산자를 꺼내준다.
-                }
-                else { // + - / * 연산자 일경우
-                    while(!op.isEmpty() && precedence(op.peek()) >= precedence(calculation[i])) {
-                        sb.append(op.pop());
-                    }
-                    op.push(calculation[i]);
-                }
-            }
-        }
-        //스택에 있는 남은 연산자를 모두 꺼낸다.
-        while(!op.isEmpty()) {
-            sb.append(op.pop());
-        }
-        System.out.println(sb);
+	public static void main(String[] args) throws IOException{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+		Stack<Character> stack = new Stack<>();
+		String str = br.readLine();
+		str += " ";
+		StringBuilder sb = new StringBuilder();
+		boolean firstFlag = false;
+		boolean secondFlag = false;
+		
+		for(int i = 0; i < str.length() - 1; i++) {
+			char ch = str.charAt(i);
+			if(ch == '+' || ch == '-' || ch == '*' || ch == '/') {
+				stack.push(ch);
+			}
+			else {
+				if(!firstFlag) {
+					firstFlag = true;
+					sb.append(ch);
+				}
+				else if(ch == '(') {
+					sb.append(ch);
+					secondFlag = true;
+					firstFlag = false;
+				}
+				else if(ch == ')') {
+					sb.append(ch);
+					secondFlag = false;
+					firstFlag = true;
+					sb.append(stack.pop());
+					String result = sb.toString().replaceAll("[()]", "");
+					sb.delete(0, sb.length());
+					bw.write(result);
+				}
+				else if(secondFlag) {
+					sb.append(ch);
+				}
+				else if(firstFlag && str.charAt(i + 1) == '*' || str.charAt(i + 1) == '/') {
+					sb.append(ch);
+				}
+				else if(firstFlag && str.charAt(i + 1) == '+' || str.charAt(i + 1) == '-' || str.charAt(i + 1) == ' ') {
+					sb.append(ch);
+					firstFlag = false;
+					while(!stack.isEmpty()) {
+						sb.append(stack.pop());
+					}
+					String result = sb.toString().replaceAll("[()]", "");
+					sb.delete(0, sb.length());
+					bw.write(result);
+				}
+			}
+		}
+		
+		while(!stack.isEmpty()) {		// 스택에 남아있는 경우 전부 출력
+			while(!stack.isEmpty()) {
+				sb.append(stack.pop());
+			}
+			String result = sb.toString();
+			result = result.replaceAll("[()]", "");
+			bw.write(result);
+		}
+		bw.flush();
+		bw.close();
 		// A+B+C*D+E+(H+G)*L
 		
-		// AB+CD*+E+HG+L*+
+		// AB+CD*+EHG+L*++
 	}
 }
